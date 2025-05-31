@@ -150,11 +150,17 @@ try:
                     secuencia = np.concatenate(frames_queue).reshape(1, -1)
                     
                     # IMPORTANTE: Aplicar la misma normalización que durante el entrenamiento
-                    if scaler is not None:
-                        secuencia_normalizada = scaler.transform(secuencia)
-                    else:
-                        print("⚠️ Advertencia: No se aplicó normalización - las predicciones pueden ser incorrectas")
-                        secuencia_normalizada = secuencia
+                    # Escalar cada frame individualmente y luego concatenarlos
+                    secuencia_escalada = []
+
+                    for frame_landmarks in frames_queue:
+                        # Cada frame tiene shape (99,)
+                        frame_landmarks_scaled = scaler.transform(frame_landmarks.reshape(1, -1)).flatten()
+                        secuencia_escalada.append(frame_landmarks_scaled)
+
+                    # Concatenar los frames escalados en la secuencia final de 495 features
+                    secuencia_normalizada = np.concatenate(secuencia_escalada).reshape(1, -1)
+
                     
                     # Hacer predicción con datos normalizados
                     pred = model.predict(secuencia_normalizada)
