@@ -110,30 +110,23 @@ This system processes live video (webcam or file) to detect and classify five ac
      * Displays the predicted label and probability percentages on the screen.
 
 ---
-
 ## 🚀 Installation and Setup
-
-### Prerequisites
-
-* Python 3.8 or higher
-* Functional webcam (only for inference)
-* GPU with CUDA (optional, to accelerate XGBoost)
-
-### Steps
 
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/tu_usuario/AI-Movement-Classifier.git
-   cd AI-Movement-Classifier
+   git clone https://github.com/your_username/YourRepoName.git
+   cd YourRepoName
    ```
 
-2. **Create a virtual environment**
+2. **Create and activate a virtual environment**
 
    ```bash
    python -m venv venv
-   source venv/bin/activate     # Linux/macOS
-   # venv\Scripts\activate      # Windows
+   # On Linux/macOS:
+   source venv/bin/activate
+   # On Windows:
+   # venv\Scripts\activate
    ```
 
 3. **Install dependencies**
@@ -143,94 +136,33 @@ This system processes live video (webcam or file) to detect and classify five ac
    pip install -r requirements.txt
    ```
 
-4. **Verify structure**
+4. **Ensure the `models/` folder contains**
 
-   * Ensure that `data/raw/videos/` contains folders with the videos.
-   * Check that `src/models/` is initially empty (it will be populated after training).
+   * `modelo_movimientos.pkl`
+   * `label_encoder.pkl`
+   * `scaler.pkl`
 
----
+   If you haven’t trained your own model yet, follow the “Training Your Own Model” section below.
 
-## 🔄 Usage Pipeline
+5. **Run in inference mode (real time)**
 
-### A. Landmark Extraction
+   ```bash
+   python main.py
+   ```
 
-Run:
+   * A window titled “Prediccion de movimiento” will open.
+   * Point your webcam at yourself and perform one of the five actions:
 
-```bash
-python src/data_collect.py
-```
-
-* Processes all videos in `data/raw/videos/`.
-* Creates `data/processed/datos.csv` and `datos.xlsx` with 33 landmarks per frame.
-
-### B. Model Training
-
-Run:
-
-```bash
-python src/main.py --mode train
-```
-
-* Loads `data/processed/datos.csv`.
-* Generates windows, calculates features, and splits into train/test.
-* Fits `StandardScaler`, `PCA(n_components=50)`, and `XGBClassifier` via GridSearchCV.
-* Upon completion, saves to `src/models/`:
-
-  * `modelo_movimientos.pkl`
-  * `label_encoder.pkl`
-  * `scaler.pkl`
-
-For a quick training (without GridSearch):
-
-```bash
-python src/main.py --mode train --quick
-```
-
-### C. Real-Time Inference
-
-Run:
-
-```bash
-python src/main.py --mode inference
-```
-
-* Loads the pipeline from `src/models/`.
-* Opens a video window (title “Real-Time Activity Recognition”).
-* Every 10 processed frames (≈ 220 ms), displays the label and probability bars over the video.
-* Press **`q`** or **`Esc`** to exit.
+     1. walking forward
+     2. walking backward
+     3. turning
+     4. standing
+     5. sitting
+   * The predicted label and probability bars will appear on-screen.
+   * To exit, press **`q`** or **Esc**, or close the window.
 
 ---
 
-## ⚙️ Available Parameters
-
-When running `src/main.py`, you can use:
-
-* `--mode`:
-
-  * `train` (training)
-  * `inference` (live inference)
-* `--quick` (only in `train` mode):
-
-  * Skips GridSearchCV for a faster, rough fit
-* `--n_components`: number of PCA components (default 50)
-* `--n_estimators`: number of XGBoost trees (default 100)
-* `--max_depth`: maximum tree depth (default 6)
-* `--learning_rate`: learning rate (default 0.01)
-* `--subsample` and `--colsample_bytree`: row/column fractions (default 0.8)
-* `--reg_alpha`, `--reg_lambda`: L1/L2 regularization penalties (default 0 and 1)
-
-Example usage with custom parameters:
-
-```bash
-python src/main.py --mode train \
-  --n_components 100 \
-  --n_estimators 200 \
-  --max_depth 9 \
-  --learning_rate 0.1 \
-  --quick
-```
-
----
 
 ## 🔍 Example Results
 
@@ -243,30 +175,6 @@ python src/main.py --mode train \
 * **Standing**: Precision 0.76, Recall 0.81, F1 0.78
 * **Sitting**: Precision 0.79, Recall 0.76, F1 0.78
 * **Macro‐avg**: P 0.91 / R 0.90 / F1 0.90
-
----
-
-## 🔧 Debugging and Common Issues
-
-1. **Camera does not open**
-
-   * Verify that it is not in use.
-   * Try a different index (`cv2.VideoCapture(1)`).
-
-2. **Errors processing videos**
-
-   * Make sure that the folders `caminar-adelante`, `caminar-atras`, etc., exist under `data/raw/videos/`.
-   * Verify file formats: `.MOV`, `.mp4`, `.avi` are supported.
-
-3. **Slow performance during inference**
-
-   * Adjust `--frame_skip` in the code to process fewer frames (e.g., 3 instead of 2).
-   * Reduce the camera resolution in `inference` (e.g., 320×240).
-
-4. **Dimension error in PCA**
-
-   * Filter out rows with NaN values in `data/processed/datos.csv` before training.
-   * Verify that `result_df_ventanas.csv` contains exactly 396 feature columns.
 
 ---
 
